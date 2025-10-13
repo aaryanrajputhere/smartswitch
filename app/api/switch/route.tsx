@@ -9,8 +9,17 @@ async function getAllSwitches() {
 }
 
 export async function GET() {
-  const switches = await getAllSwitches();
-  return NextResponse.json({ switches });
+  try {
+    console.log("GET /api/switch called");
+    const switches = await getAllSwitches();
+    return NextResponse.json({ switches });
+  } catch (err) {
+    console.error("GET /api/switch error:", err);
+    return NextResponse.json(
+      { switches: [], ok: false, error: String(err) },
+      { status: 500 }
+    );
+  }
 }
 
 export async function POST(req: Request) {
