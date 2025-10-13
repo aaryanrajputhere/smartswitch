@@ -94,6 +94,25 @@ export async function PUT(req: Request) {
       where: { id: Number(id) },
       data: { isOn: Boolean(isOn) },
     });
+
+    // after DB update, notify the bulb1 route so in-memory bulb state reflects this change
+    (async () => {
+      try {
+        const base =
+          process.env.NEXT_PUBLIC_APP_URL ||
+          process.env.APP_URL ||
+          "http://localhost:3000";
+        const bulbId = updated.switchId ?? updated.name ?? `SW${updated.id}`;
+        const stateStr = updated.isOn ? "ON" : "OFF";
+        await fetch(`${base}/api/bulb1`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: bulbId, state: stateStr }),
+        });
+      } catch (e) {
+        console.error("Failed to notify /api/bulb1:", e);
+      }
+    })();
     return NextResponse.json({ ok: true, switch: updated });
   } catch (err) {
     return NextResponse.json(
@@ -102,3 +121,4 @@ export async function PUT(req: Request) {
     );
   }
 }
+
