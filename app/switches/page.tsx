@@ -77,11 +77,24 @@ export default function Page() {
   const [showModal, setShowModal] = React.useState(false);
 
   async function toggleSwitch(id: number | string, next: boolean) {
+    // Update your local API (database)
     await fetch("/api/switch", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id, isOn: next }),
     });
+
+    // Then call the remote bulb control API
+    await fetch("/api/bulb1", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id: "SW01",
+        state: next ? "ON" : "OFF",
+      }),
+    });
+
+    // Finally update UI state
     setSwitches((s) => s.map((x) => (x.id === id ? { ...x, isOn: next } : x)));
   }
 
