@@ -50,7 +50,12 @@ export default function Page() {
     const res = await fetch("/api/switch", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: newName, switchId: newSwitchId }),
+      body: JSON.stringify({
+        name: newName,
+        switchId: newSwitchId,
+        electricityRate: electricityRate ? parseFloat(electricityRate) : 0,
+        powerRating: powerRating ? parseFloat(powerRating) : 0,
+      }),
     });
     if (!res.ok) {
       const text = await res.text().catch(() => "");
@@ -58,22 +63,28 @@ export default function Page() {
       return;
     }
 
-    let sw = null;
+    let result = null;
     try {
-      sw = await res.json();
+      result = await res.json();
     } catch (err) {
       console.error("Failed to parse JSON from createSwitch response", err);
       return;
     }
 
+    // The API returns { ok: true, switch: {...} }, so extract the switch object
+    const sw = result.switch || result;
     setSwitches((s) => [sw, ...s]);
     setNewName("");
     setNewSwitchId("");
+    setElectricityRate("");
+    setPowerRating("");
     setShowModal(false);
   }
 
   const [newName, setNewName] = React.useState("");
   const [newSwitchId, setNewSwitchId] = React.useState("");
+  const [electricityRate, setElectricityRate] = React.useState("");
+  const [powerRating, setPowerRating] = React.useState("");
   const [showModal, setShowModal] = React.useState(false);
 
   async function toggleSwitch(id: number | string, next: boolean) {
@@ -131,6 +142,28 @@ export default function Page() {
               value={newSwitchId}
               onChange={(e) => setNewSwitchId(e.target.value)}
               placeholder="e.g. SWABC123"
+              className="w-full px-3 py-2 border rounded-md mb-3"
+            />
+
+            <label className="block mb-2 text-sm">
+              Electricity Rate (₹/kWh)
+            </label>
+            <input
+              type="number"
+              step="0.01"
+              value={electricityRate}
+              onChange={(e) => setElectricityRate(e.target.value)}
+              placeholder="e.g. 8.50"
+              className="w-full px-3 py-2 border rounded-md mb-3"
+            />
+
+            <label className="block mb-2 text-sm">Power Rating (kW)</label>
+            <input
+              type="number"
+              step="0.01"
+              value={powerRating}
+              onChange={(e) => setPowerRating(e.target.value)}
+              placeholder="e.g. 0.60"
               className="w-full px-3 py-2 border rounded-md mb-4"
             />
 

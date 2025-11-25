@@ -25,7 +25,7 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const body = (await req.json().catch(() => ({}))) as any;
-    let { name, switchId } = body || {};
+    let { name, switchId, electricityRate, powerRating } = body || {};
 
     if (!name && !switchId) {
       return NextResponse.json(
@@ -54,6 +54,12 @@ export async function POST(req: Request) {
       if (switchId) createData.switchId = switchId;
       // ensure there's at least a name in DB (use switchId if name missing)
       if (!createData.name) createData.name = switchId ?? "";
+
+      // Add electricity rate and power rating
+      createData.electricityRate =
+        typeof electricityRate === "number" ? electricityRate : 0;
+      createData.powerRating =
+        typeof powerRating === "number" ? powerRating : 0;
 
       const created = await prisma.switch.create({ data: createData as any });
       return NextResponse.json({ ok: true, switch: created });
@@ -90,9 +96,53 @@ export async function PUT(req: Request) {
         { status: 400 }
       );
     }
+
+    // First, get the current switch state
+    const currentSwitch = await prisma.switch.findUnique({
+      where: { id: Number(id) },
+    });
+
+    if (!currentSwitch) {
+      return NextResponse.json(
+        { ok: false, error: "Switch not found" },
+        { status: 404 }
+      );
+    }
+
+    const updateData: any = { isOn: Boolean(isOn) };
+
+    // If turning ON, record the timestamp
+    if (isOn && !currentSwitch.isOn) {
+      updateData.lastOnTime = new Date();
+    }
+
+    // If turning OFF and was previously ON, calculate elapsed time and update stats
+    if (!isOn && currentSwitch.isOn && currentSwitch.lastOnTime) {
+      const now = new Date();
+      const lastOn = new Date(currentSwitch.lastOnTime);
+      const elapsedMs = now.getTime() - lastOn.getTime();
+      const elapsedHours = elapsedMs / (1000 * 60 * 60); // convert to hours
+
+      // Update cumulative hours (convert to integer minutes for precision, then back)
+      const newHoursON =
+        currentSwitch.hoursON + Math.round(elapsedHours * 60) / 60;
+      updateData.hoursON = Math.round(newHoursON);
+
+      // Calculate power consumed (kWh) = powerRating (kW) * hours
+      const additionalPower = currentSwitch.powerRating * elapsedHours;
+      updateData.powerConsumed = currentSwitch.powerConsumed + additionalPower;
+
+      // Calculate bill amount = powerConsumed (kWh) * electricityRate (₹/kWh)
+      updateData.billAmount =
+        updateData.powerConsumed * currentSwitch.electricityRate;
+
+      // Clear lastOnTime since we're turning off
+      updateData.lastOnTime = null;
+    }
+
     const updated = await prisma.switch.update({
       where: { id: Number(id) },
-      data: { isOn: Boolean(isOn) },
+      data: updateData,
     });
 
     // after DB update, notify the bulb1 route so in-memory bulb state reflects this change
@@ -121,4 +171,3 @@ export async function PUT(req: Request) {
     );
   }
 }
-

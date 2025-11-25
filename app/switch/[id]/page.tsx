@@ -8,6 +8,12 @@ type SwitchType = {
   name: string;
   switchId?: string;
   isOn: boolean;
+  powerRating?: number;
+  electricityRate?: number;
+  hoursON?: number;
+  powerConsumed?: number;
+  billAmount?: number;
+  updatedAt?: string;
 };
 
 function UsageChart({ seed }: { seed: string }) {
@@ -181,37 +187,16 @@ export default function SwitchDetailPage() {
     };
   }, [idParam]);
 
-  // Mock frontend-only stats
+  // Get stats from backend data
   function makeStats(s: SwitchType | null) {
     if (!s) return null;
-    // deterministic RNG from id
-    function rngFromId(n: number) {
-      let x = n % 2147483647;
-      return function () {
-        x = (x * 16807) % 2147483647;
-        return (x - 1) / 2147483646;
-      };
-    }
 
-    const rand = rngFromId(s.id);
-
-    // Hours on in last month (0 - 720)
-    const hoursOn = Math.min(
-      720,
-      Math.max(0, Math.round(((s.id * 37) % 200) + Math.round(rand() * 120)))
-    );
-
-    // average power when on in kW (mock, e.g. 0.06 kW = 60W)
-    const avgKW = 0.06;
-    const powerConsumed = +(hoursOn * avgKW).toFixed(2); // kWh
-
-    // price per kWh in INR (mock)
-    const rate = 12; // ₹12 per kWh
-    const price = Math.round(powerConsumed * rate);
-
-    const lastActive = new Date(
-      Date.now() - (s.id % 5) * 3600 * 1000
-    ).toLocaleString();
+    const hoursOn = s.hoursON ?? 0;
+    const powerConsumed = s.powerConsumed ?? 0;
+    const price = s.billAmount ?? 0;
+    const lastActive = s.updatedAt
+      ? new Date(s.updatedAt).toLocaleString()
+      : "Never";
 
     return { hoursOn, powerConsumed, price, lastActive };
   }

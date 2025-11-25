@@ -13,4 +13,11 @@ model Switch {
   switchId  String?  @unique
   isOn      Boolean  @default(false)
   updatedAt DateTime @updatedAt
+  lastOnTime DateTime?
+  powerRating Float    @default(0.0)
+  electricityRate Float    @default(0.0)
+  hoursON Int      @default(0)
+  powerConsumed Float    @default(0.0)
+  billAmount Float    @default(0.0)
 }
+
