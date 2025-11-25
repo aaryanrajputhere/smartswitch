@@ -16,7 +16,7 @@ model Switch {
   lastOnTime DateTime?
   powerRating Float    @default(0.0)
   electricityRate Float    @default(0.0)
-  hoursON Int      @default(0)
+  minutesON Int      @default(0)
   powerConsumed Float    @default(0.0)
   billAmount Float    @default(0.0)
 }

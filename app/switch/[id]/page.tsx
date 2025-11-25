@@ -10,7 +10,7 @@ type SwitchType = {
   isOn: boolean;
   powerRating?: number;
   electricityRate?: number;
-  hoursON?: number;
+  minutesON?: number;
   powerConsumed?: number;
   billAmount?: number;
   updatedAt?: string;
@@ -191,14 +191,14 @@ export default function SwitchDetailPage() {
   function makeStats(s: SwitchType | null) {
     if (!s) return null;
 
-    const hoursOn = s.hoursON ?? 0;
+    const minutesOn = s.minutesON ?? 0;
     const powerConsumed = s.powerConsumed ?? 0;
     const price = s.billAmount ?? 0;
     const lastActive = s.updatedAt
       ? new Date(s.updatedAt).toLocaleString()
       : "Never";
 
-    return { hoursOn, powerConsumed, price, lastActive };
+    return { minutesOn, powerConsumed, price, lastActive };
   }
 
   const stats = makeStats(sw);
@@ -251,8 +251,8 @@ export default function SwitchDetailPage() {
           <h2 className="text-lg font-semibold mb-2">Stats</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="p-4 bg-white dark:bg-gray-800 border rounded-md">
-              <div className="text-sm text-gray-500">Hours On (last month)</div>
-              <div className="text-2xl font-bold">{stats?.hoursOn ?? "-"}</div>
+              <div className="text-sm text-gray-500">Minutes On</div>
+              <div className="text-2xl font-bold">{stats?.minutesOn ?? "-"}</div>
             </div>
             <div className="p-4 bg-white dark:bg-gray-800 border rounded-md">
               <div className="text-sm text-gray-500">Power Consumed (kWh)</div>

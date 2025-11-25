@@ -121,14 +121,14 @@ export async function PUT(req: Request) {
       const now = new Date();
       const lastOn = new Date(currentSwitch.lastOnTime);
       const elapsedMs = now.getTime() - lastOn.getTime();
-      const elapsedHours = elapsedMs / (1000 * 60 * 60); // convert to hours
+      const elapsedMinutes = elapsedMs / (1000 * 60); // convert to minutes
 
-      // Update cumulative hours (convert to integer minutes for precision, then back)
-      const newHoursON =
-        currentSwitch.hoursON + Math.round(elapsedHours * 60) / 60;
-      updateData.hoursON = Math.round(newHoursON);
+      // Update cumulative minutes
+      const newMinutesON = currentSwitch.minutesON + Math.round(elapsedMinutes);
+      updateData.minutesON = newMinutesON;
 
       // Calculate power consumed (kWh) = powerRating (kW) * hours
+      const elapsedHours = elapsedMinutes / 60;
       const additionalPower = currentSwitch.powerRating * elapsedHours;
       updateData.powerConsumed = currentSwitch.powerConsumed + additionalPower;
 
