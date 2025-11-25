@@ -252,7 +252,9 @@ export default function SwitchDetailPage() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="p-4 bg-white dark:bg-gray-800 border rounded-md">
               <div className="text-sm text-gray-500">Minutes On</div>
-              <div className="text-2xl font-bold">{stats?.minutesOn ?? "-"}</div>
+              <div className="text-2xl font-bold">
+                {stats?.minutesOn ?? "-"}
+              </div>
             </div>
             <div className="p-4 bg-white dark:bg-gray-800 border rounded-md">
               <div className="text-sm text-gray-500">Power Consumed (kWh)</div>

@@ -105,6 +105,31 @@ export default function Page() {
       }),
     });
 
+    // Call Adafruit IO API to update the feed
+    try {
+      const response = await fetch(
+        "https://io.adafruit.com/api/v2/aaryanrajput/feeds/bulb/data",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-AIO-Key": process.env.NEXT_PUBLIC_AIO_KEY || "",
+          },
+          body: JSON.stringify({
+            value: next ? "SW01-ON" : "SW01-OFF",
+          }),
+        }
+      );
+      if (!response.ok) {
+        const error = await response.text();
+        console.error("Adafruit IO error:", response.status, error);
+      } else {
+        console.log("Adafruit IO updated successfully");
+      }
+    } catch (e) {
+      console.error("Failed to update Adafruit IO:", e);
+    }
+
     // Finally update UI state
     setSwitches((s) => s.map((x) => (x.id === id ? { ...x, isOn: next } : x)));
   }
